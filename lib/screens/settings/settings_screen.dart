@@ -1,0 +1,310 @@
+import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import '../../app.dart';
+import '../../models/settings.dart';
+import '../../services/database_service.dart';
+
+class SettingsScreen extends StatefulWidget {
+  const SettingsScreen({super.key});
+
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
+  late Settings _settings;
+  final _nameController = TextEditingController();
+  final _employeeIdController = TextEditingController();
+  final _hourlyRateController = TextEditingController();
+  final _monthlyQuotaController = TextEditingController();
+  final _yearlyQuotaController = TextEditingController();
+  DateTime? _startDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSettings();
+  }
+
+  void _loadSettings() {
+    _settings = DatabaseService.getSettings();
+    _nameController.text = _settings.fullName ?? '';
+    _employeeIdController.text = _settings.employeeId ?? '';
+    _hourlyRateController.text =
+        _settings.hourlyRate > 0 ? _settings.hourlyRate.toString() : '';
+    _monthlyQuotaController.text =
+        _settings.monthlyQuota > 0 ? _settings.monthlyQuota.toString() : '';
+    _yearlyQuotaController.text =
+        _settings.yearlyQuota > 0 ? _settings.yearlyQuota.toString() : '';
+    _startDate = _settings.startDate;
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _employeeIdController.dispose();
+    _hourlyRateController.dispose();
+    _monthlyQuotaController.dispose();
+    _yearlyQuotaController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Ayarlar'),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(20),
+        children: [
+          // Theme section
+          _buildSectionHeader('Tema'),
+          _buildThemeSelector(),
+          const SizedBox(height: 32),
+
+          // Personal info section
+          _buildSectionHeader('Kişisel Bilgiler'),
+          const SizedBox(height: 12),
+          _buildTextField(
+            controller: _nameController,
+            label: 'Adı Soyadı',
+            icon: Icons.person_outline,
+          ),
+          const SizedBox(height: 12),
+          _buildTextField(
+            controller: _employeeIdController,
+            label: 'Sicil No',
+            icon: Icons.badge_outlined,
+          ),
+          const SizedBox(height: 12),
+          _buildDateField(),
+          const SizedBox(height: 32),
+
+          // Overtime settings section
+          _buildSectionHeader('Mesai Ayarları'),
+          const SizedBox(height: 12),
+          _buildTextField(
+            controller: _hourlyRateController,
+            label: 'Saat Ücreti (₺)',
+            icon: Icons.payments_outlined,
+            keyboardType: TextInputType.number,
+          ),
+          const SizedBox(height: 12),
+          _buildTextField(
+            controller: _monthlyQuotaController,
+            label: 'Aylık Mesai Kotası (saat)',
+            icon: Icons.calendar_view_month_outlined,
+            keyboardType: TextInputType.number,
+          ),
+          const SizedBox(height: 12),
+          _buildTextField(
+            controller: _yearlyQuotaController,
+            label: 'Yıllık Mesai Kotası (saat)',
+            icon: Icons.calendar_today_outlined,
+            keyboardType: TextInputType.number,
+          ),
+          const SizedBox(height: 40),
+
+          // Save button
+          ElevatedButton(
+            onPressed: _save,
+            child: const Padding(
+              padding: EdgeInsets.symmetric(vertical: 4),
+              child: Text('Kaydet'),
+            ),
+          ),
+          const SizedBox(height: 20),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Text(
+      title.toUpperCase(),
+      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+            letterSpacing: 1.5,
+            fontWeight: FontWeight.w600,
+          ),
+    );
+  }
+
+  Widget _buildThemeSelector() {
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Row(
+          children: [
+            _buildThemeOption(
+              icon: Icons.brightness_auto_outlined,
+              label: 'Sistem',
+              mode: ThemeMode.system,
+            ),
+            _buildThemeOption(
+              icon: Icons.light_mode_outlined,
+              label: 'Açık',
+              mode: ThemeMode.light,
+            ),
+            _buildThemeOption(
+              icon: Icons.dark_mode_outlined,
+              label: 'Koyu',
+              mode: ThemeMode.dark,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildThemeOption({
+    required IconData icon,
+    required String label,
+    required ThemeMode mode,
+  }) {
+    final isSelected = _settings.themeMode == mode;
+
+    return Expanded(
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            _settings.setThemeMode(mode);
+          });
+          // Update app theme immediately
+          FOPRApp.instance?.updateTheme(mode);
+        },
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 12),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+                : null,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            children: [
+              Icon(
+                icon,
+                color: isSelected
+                    ? Theme.of(context).colorScheme.primary
+                    : Colors.grey,
+              ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                      color: isSelected
+                          ? Theme.of(context).colorScheme.primary
+                          : Colors.grey,
+                      fontWeight: isSelected ? FontWeight.w600 : null,
+                    ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    TextInputType? keyboardType,
+  }) {
+    return TextField(
+      controller: controller,
+      keyboardType: keyboardType,
+      decoration: InputDecoration(
+        labelText: label,
+        prefixIcon: Icon(icon),
+      ),
+    );
+  }
+
+  Widget _buildDateField() {
+    final dateStr = _startDate != null
+        ? DateFormat('d MMMM yyyy', 'tr_TR').format(_startDate!)
+        : 'Seçilmedi';
+
+    return Card(
+      child: InkWell(
+        onTap: _selectStartDate,
+        borderRadius: BorderRadius.circular(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Icon(
+                Icons.work_outline,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'İşe Başlangıç Tarihi',
+                      style: Theme.of(context).textTheme.labelMedium,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      dateStr,
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                  ],
+                ),
+              ),
+              Icon(
+                Icons.chevron_right,
+                color: Colors.grey.shade400,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _selectStartDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _startDate ?? DateTime.now(),
+      firstDate: DateTime(1990),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        _startDate = picked;
+      });
+    }
+  }
+
+  Future<void> _save() async {
+    _settings.fullName =
+        _nameController.text.isNotEmpty ? _nameController.text : null;
+    _settings.employeeId =
+        _employeeIdController.text.isNotEmpty ? _employeeIdController.text : null;
+    _settings.startDate = _startDate;
+    _settings.hourlyRate =
+        double.tryParse(_hourlyRateController.text.replaceAll(',', '.')) ?? 0;
+    _settings.monthlyQuota =
+        double.tryParse(_monthlyQuotaController.text.replaceAll(',', '.')) ?? 0;
+    _settings.yearlyQuota =
+        double.tryParse(_yearlyQuotaController.text.replaceAll(',', '.')) ?? 0;
+
+    await DatabaseService.saveSettings(_settings);
+
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Ayarlar kaydedildi'),
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      Navigator.pop(context);
+    }
+  }
+}
