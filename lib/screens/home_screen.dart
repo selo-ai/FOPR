@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../services/database_service.dart';
 import 'overtime/overtime_screen.dart';
+import 'leave/leave_screen.dart';
 import 'settings/settings_screen.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -54,14 +55,14 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 32),
 
             // Modules
-            Text(
+            /* Text(
               'Modüller',
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
                     letterSpacing: 1.5,
                     fontWeight: FontWeight.w600,
                   ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 16), */
 
             // Module Cards
             _buildModuleCard(
@@ -77,9 +78,8 @@ class _HomeScreenState extends State<HomeScreen> {
               context,
               icon: Icons.beach_access_outlined,
               title: 'Yıllık İzin',
-              subtitle: 'Yakında',
-              enabled: false,
-              onTap: () {},
+              subtitle: '${DatabaseService.getRemainingAnnualLeaveDays(DateTime.now().year).toStringAsFixed(0)} gün kaldı',
+              onTap: () => _navigateToLeave(context),
             ),
             _buildModuleCard(
               context,
@@ -215,6 +215,13 @@ class _HomeScreenState extends State<HomeScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const SettingsScreen()),
+    ).then((_) => _loadData());
+  }
+
+  void _navigateToLeave(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const LeaveScreen()),
     ).then((_) => _loadData());
   }
 }
