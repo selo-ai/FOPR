@@ -20,18 +20,20 @@ class SettingsAdapter extends TypeAdapter<Settings> {
       fullName: fields[0] as String?,
       employeeId: fields[1] as String?,
       startDate: fields[2] as DateTime?,
-      hourlyRate: fields[3] as double? ?? 0.0,
-      monthlyQuota: fields[4] as double? ?? 0.0,
-      yearlyQuota: fields[5] as double? ?? 0.0,
-      themeModeIndex: fields[6] as int? ?? 0,
-      overtimeTutorialShown: fields[7] as bool? ?? false,
+      hourlyRate: fields[3] as double,
+      monthlyQuota: fields[4] as double,
+      yearlyQuota: fields[5] as double,
+      themeModeIndex: fields[6] as int,
+      overtimeTutorialShown: fields[7] == null ? false : fields[7] as bool,
+      salarySettingsReminderShown:
+          fields[9] == null ? false : fields[9] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, Settings obj) {
     writer
-      ..writeByte(8)
+      ..writeByte(9)
       ..writeByte(0)
       ..write(obj.fullName)
       ..writeByte(1)
@@ -47,7 +49,9 @@ class SettingsAdapter extends TypeAdapter<Settings> {
       ..writeByte(6)
       ..write(obj.themeModeIndex)
       ..writeByte(7)
-      ..write(obj.overtimeTutorialShown);
+      ..write(obj.overtimeTutorialShown)
+      ..writeByte(9)
+      ..write(obj.salarySettingsReminderShown);
   }
 
   @override

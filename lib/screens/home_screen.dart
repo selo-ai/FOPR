@@ -3,7 +3,12 @@ import 'package:intl/intl.dart';
 import '../services/database_service.dart';
 import 'overtime/overtime_screen.dart';
 import 'leave/leave_screen.dart';
+import 'shift/shift_screen.dart';
 import 'settings/settings_screen.dart';
+import 'notes/notes_screen.dart';
+import 'salary/salary_screen.dart';
+import '../models/salary_record.dart';
+import '../services/database_service.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -81,21 +86,20 @@ class _HomeScreenState extends State<HomeScreen> {
               subtitle: '${DatabaseService.getRemainingAnnualLeaveDays(DateTime.now().year).toStringAsFixed(0)} gün kaldı',
               onTap: () => _navigateToLeave(context),
             ),
-            _buildModuleCard(
-              context,
-              icon: Icons.payments_outlined,
-              title: 'Maaş Takip',
-              subtitle: 'Yakında',
-              enabled: false,
-              onTap: () {},
-            ),
+            _buildSalaryCard(context),
             _buildModuleCard(
               context,
               icon: Icons.calendar_month_outlined,
               title: 'Vardiya Hesaplama',
-              subtitle: 'Yakında',
-              enabled: false,
-              onTap: () {},
+              subtitle: 'Hangi gün hangi vardiya?',
+              onTap: () => _navigateToShift(context),
+            ),
+            _buildModuleCard(
+              context,
+              icon: Icons.note_alt_outlined,
+              title: 'Notlar',
+              subtitle: 'Notlarınızı tutun',
+              onTap: () => _navigateToNotes(context),
             ),
           ],
         ),
@@ -223,5 +227,47 @@ class _HomeScreenState extends State<HomeScreen> {
       context,
       MaterialPageRoute(builder: (context) => const LeaveScreen()),
     ).then((_) => _loadData());
+  }
+
+  void _navigateToShift(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ShiftScreen()),
+    );
+  }
+
+  Widget _buildSalaryCard(BuildContext context) {
+    // Get latest salary record
+    final records = DatabaseService.getAllSalaryRecords();
+    String subtitle = 'Maaş ve kesinti takibi';
+    
+    if (records.isNotEmpty) {
+      final latest = records.first; // Already sorted by date desc in DatabaseService
+      final formatted = NumberFormat.currency(symbol: '₺', decimalDigits: 0, locale: 'tr_TR').format(latest.totalNetPay);
+      final month = DateFormat('MMMM', 'tr_TR').format(DateTime(latest.year, latest.month));
+      subtitle = '$month: $formatted';
+    }
+
+    return _buildModuleCard(
+      context,
+      icon: Icons.payments_outlined,
+      title: 'Maaş Takip',
+      subtitle: subtitle,
+      onTap: () => _navigateToSalary(context),
+    );
+  }
+
+  void _navigateToSalary(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const SalaryScreen()),
+    );
+  }
+
+  void _navigateToNotes(BuildContext context) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const NotesScreen()),
+    );
   }
 }

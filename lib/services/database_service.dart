@@ -3,15 +3,26 @@ import '../models/overtime.dart';
 import '../models/settings.dart';
 import '../models/leave.dart';
 import '../models/leave_type.dart';
+import '../models/shift_type.dart';
+
+import '../models/note.dart';
+import '../models/salary_settings.dart';
+import '../models/salary_record.dart';
 
 class DatabaseService {
   static const String overtimeBoxName = 'overtimes';
   static const String settingsBoxName = 'settings';
   static const String leaveBoxName = 'leaves';
+  static const String noteBoxName = 'notes';
+  static const String salarySettingsBoxName = 'salary_settings';
+  static const String salaryRecordBoxName = 'salary_records';
 
   static late Box<Overtime> _overtimeBox;
   static late Box<Settings> _settingsBox;
   static late Box<Leave> _leaveBox;
+  static late Box<Note> _noteBox;
+  static late Box<SalarySettings> _salarySettingsBox;
+  static late Box<SalaryRecord> _salaryRecordBox;
 
   static Future<void> init() async {
     await Hive.initFlutter();
@@ -21,11 +32,18 @@ class DatabaseService {
     Hive.registerAdapter(SettingsAdapter());
     Hive.registerAdapter(LeaveAdapter());
     Hive.registerAdapter(LeaveTypeAdapter());
+    Hive.registerAdapter(ShiftTypeAdapter());
+    Hive.registerAdapter(NoteAdapter());
+    Hive.registerAdapter(SalarySettingsAdapter());
+    Hive.registerAdapter(SalaryRecordAdapter());
 
     // Open boxes
     _overtimeBox = await Hive.openBox<Overtime>(overtimeBoxName);
     _settingsBox = await Hive.openBox<Settings>(settingsBoxName);
     _leaveBox = await Hive.openBox<Leave>(leaveBoxName);
+    _noteBox = await Hive.openBox<Note>(noteBoxName);
+    _salarySettingsBox = await Hive.openBox<SalarySettings>(salarySettingsBoxName);
+    _salaryRecordBox = await Hive.openBox<SalaryRecord>(salaryRecordBoxName);
 
     // Initialize settings if not exists
     if (_settingsBox.isEmpty) {
@@ -145,5 +163,80 @@ class DatabaseService {
 
   static Future<void> saveSettings(Settings settings) async {
     await _settingsBox.put('default', settings);
+  }
+
+  // ============ Note Operations ============
+
+  static Box<Note> get noteBox => _noteBox;
+
+  static List<Note> getAllNotes() {
+    return _noteBox.values.toList()
+      ..sort((a, b) {
+        // First sort by starred (starred first)
+        if (a.isStarred != b.isStarred) {
+          return a.isStarred ? -1 : 1;
+        }
+        // Then sort by updatedAt (newest first)
+        return b.updatedAt.compareTo(a.updatedAt);
+      });
+  }
+
+  static Future<void> addNote(Note note) async {
+    await _noteBox.put(note.id, note);
+  }
+
+  static Future<void> updateNote(Note note) async {
+    note.updatedAt = DateTime.now();
+    await note.save();
+  }
+
+  static Future<void> deleteNote(String id) async {
+    await _noteBox.delete(id);
+  }
+
+  // ============ Salary Operations ============
+
+  static Future<SalarySettings> getSalarySettings() async {
+    if (_salarySettingsBox.isEmpty) {
+      // Default settings
+      final defaultSettings = SalarySettings(
+        hourlyGrossRate: 0.0,
+      );
+      await _salarySettingsBox.put('default', defaultSettings);
+      return defaultSettings;
+    }
+    return _salarySettingsBox.get('default')!;
+  }
+
+  static Future<void> saveSalarySettings(SalarySettings settings) async {
+    await _salarySettingsBox.put('default', settings);
+  }
+
+  static List<SalaryRecord> getAllSalaryRecords() {
+    return _salaryRecordBox.values.toList()
+      ..sort((a, b) {
+        if (a.year != b.year) {
+          return b.year.compareTo(a.year);
+        }
+        return b.month.compareTo(a.month);
+      });
+  }
+
+  static SalaryRecord? getSalaryRecord(int year, int month) {
+    try {
+      return _salaryRecordBox.values.firstWhere(
+        (salary) => salary.year == year && salary.month == month,
+      );
+    } catch (e) {
+      return null;
+    }
+  }
+
+  static Future<void> saveSalaryRecord(SalaryRecord record) async {
+    await _salaryRecordBox.put(record.id, record);
+  }
+
+  static Future<void> deleteSalaryRecord(String id) async {
+    await _salaryRecordBox.delete(id);
   }
 }

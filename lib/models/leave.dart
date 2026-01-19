@@ -1,4 +1,5 @@
 import 'package:hive/hive.dart';
+import '../utils/holiday_utils.dart';
 import 'leave_type.dart';
 
 part 'leave.g.dart';
@@ -41,22 +42,66 @@ class Leave extends HiveObject {
   });
 
   /// İş günü sayısını hesaplar (pazar günü hariç veya dahil)
-  static double calculateDays(DateTime start, DateTime end, bool includesWeekends) {
-    if (includesWeekends) {
-      // Tüm günleri say
-      return end.difference(start).inDays + 1;
-    } else {
-      // Sadece iş günlerini say (Pazar hariç - 6 günlük çalışma sistemi)
-      double count = 0;
-      DateTime current = start;
-      while (!current.isAfter(end)) {
-        if (current.weekday != DateTime.sunday) {
-          count++;
+  static double calculateDays(
+    DateTime start, 
+    DateTime end, 
+    bool includesWeekends, {
+    bool excludeHolidays = false,
+  }) {
+    // Toplam gün farkı + 1 (başlangıç ve bitiş dahil)
+    double count = 0;
+    DateTime current = start;
+    
+    // Günü sıfırlayarak sadece tarih karşılaştırması yapalım (saat farkını yok saymak için)
+    final endDate = DateTime(end.year, end.month, end.day);
+    
+    while (!DateTime(current.year, current.month, current.day).isAfter(endDate)) {
+      bool isWorkDay = true;
+      
+      // 1. Hafta sonu kontrolü
+      if (!includesWeekends) {
+        if (current.weekday == DateTime.sunday) {
+          isWorkDay = false;
         }
-        current = current.add(const Duration(days: 1));
       }
-      return count;
+      
+      // 2. Resmi tatil kontrolü (Eğer hafta sonu değilse veya hafta sonu dahillerde de tatil düşülecekse)
+      // Ancak genellikle yıllık izin (resmi tatiller hariç) hafta sonu da sayılmaz.
+      // Sadece "iş günü" ise tatil kontrolü yapılır.
+      if (isWorkDay && excludeHolidays) {
+        final holidayAmount = HolidayUtils.getHolidayAmount(current);
+        if (holidayAmount > 0) {
+          // Eğer tam gün tatilse isWorkDay = false
+          // Eğer yarım gün se (0.5), o zaman 0.5 gün ekle?
+          // Mantık: count += (1 - holidayAmount)
+          count += (1.0 - holidayAmount);
+          isWorkDay = false; // count'u yukarıda elle yönettik
+        }
+      }
+      
+      if (isWorkDay) {
+        count++;
+      }
+      
+      current = current.add(const Duration(days: 1));
     }
+    
+    return count;
+  }
+
+  /// Belirtilen aralıktaki resmi tatil gün sayısını hesaplar
+  static double calculateHolidayCount(DateTime start, DateTime end) {
+    double count = 0;
+    DateTime current = start;
+    final endDate = DateTime(end.year, end.month, end.day);
+    
+    while (!DateTime(current.year, current.month, current.day).isAfter(endDate)) {
+      final holidayAmount = HolidayUtils.getHolidayAmount(current);
+      count += holidayAmount;
+      current = current.add(const Duration(days: 1));
+    }
+    
+    return count;
   }
 
   /// Yıllık izin kotasından düşülecek gün sayısı

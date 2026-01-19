@@ -16,7 +16,12 @@ void main() async {
   await initializeDateFormatting('tr_TR', null);
   
   // Initialize database
-  await DatabaseService.init();
+  try {
+    await DatabaseService.init();
+  } catch (e) {
+    debugPrint('Database init error: $e');
+    // Continue running app even if DB fails, or show error screen
+  }
   
   runApp(const FOPRApp());
 }

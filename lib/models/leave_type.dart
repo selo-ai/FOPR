@@ -61,6 +61,9 @@ extension LeaveTypeExtension on LeaveType {
   /// Bu izin türü yıllık izin kotasından düşer mi?
   bool get deductsFromQuota => this == LeaveType.annual;
 
+  /// Bu izin türünde resmi tatiller düşülür mü?
+  bool get excludesHolidays => this == LeaveType.annual;
+
   /// Bu izin türünde hafta sonları izinden sayılır mı?
   bool get includesWeekends {
     switch (this) {

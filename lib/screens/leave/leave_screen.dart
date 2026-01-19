@@ -656,7 +656,12 @@ class _LeaveItem extends StatelessWidget {
       } else if (leave.type.fixedDays != null) {
         calculatedDays = leave.type.fixedDays!.toDouble();
       } else {
-        calculatedDays = Leave.calculateDays(startDate, endDate, leave.type.includesWeekends);
+        calculatedDays = Leave.calculateDays(
+          startDate, 
+          endDate, 
+          leave.type.includesWeekends,
+          excludeHolidays: leave.type.excludesHolidays,
+        );
       }
     }
 

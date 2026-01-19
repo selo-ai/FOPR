@@ -30,8 +30,11 @@ class Settings extends HiveObject {
   int themeModeIndex; // 0: system, 1: light, 2: dark
 
   // Tutorial flags
-  @HiveField(7)
+  @HiveField(7, defaultValue: false)
   bool overtimeTutorialShown;
+
+  @HiveField(9, defaultValue: false)
+  bool salarySettingsReminderShown;
 
   Settings({
     this.fullName,
@@ -42,6 +45,7 @@ class Settings extends HiveObject {
     this.yearlyQuota = 0.0,
     this.themeModeIndex = 0,
     this.overtimeTutorialShown = false,
+    this.salarySettingsReminderShown = false,
   });
 
   ThemeMode get themeMode {

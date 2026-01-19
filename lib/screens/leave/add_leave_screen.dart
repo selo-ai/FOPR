@@ -21,6 +21,8 @@ class _AddLeaveScreenState extends State<AddLeaveScreen> {
   double _hours = 4.0; // Ücretsiz izin için saat
   final _noteController = TextEditingController();
   double _calculatedDays = 1;
+  double _holidayDeducedDays = 0;
+
 
   @override
   void initState() {
@@ -51,7 +53,15 @@ class _AddLeaveScreenState extends State<AddLeaveScreen> {
         _startDate,
         _endDate,
         _selectedType.includesWeekends,
+        excludeHolidays: _selectedType.excludesHolidays,
+
       );
+      
+      if (_selectedType.excludesHolidays) {
+        _holidayDeducedDays = Leave.calculateHolidayCount(_startDate, _endDate);
+      } else {
+        _holidayDeducedDays = 0;
+      }
     }
     setState(() {});
   }
@@ -320,19 +330,38 @@ class _AddLeaveScreenState extends State<AddLeaveScreen> {
         color: const Color(0xFF2196F3).withOpacity(0.1),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.info_outline, color: Color(0xFF2196F3)),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(
-                color: Color(0xFF2196F3),
-                fontWeight: FontWeight.w500,
+          Row(
+            children: [
+              const Icon(Icons.info_outline, color: Color(0xFF2196F3)),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  label,
+                  style: const TextStyle(
+                    color: Color(0xFF2196F3),
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (_holidayDeducedDays > 0 && _selectedType.excludesHolidays) ...[
+            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.only(left: 36),
+              child: Text(
+                '${_holidayDeducedDays == _holidayDeducedDays.toInt() ? _holidayDeducedDays.toInt() : _holidayDeducedDays} gün resmi tatil nedeniyle düşüldü',
+                style: TextStyle(
+                  color: Colors.orange.shade700,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
-          ),
+          ],
         ],
       ),
     );
