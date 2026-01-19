@@ -3,6 +3,7 @@ import '../../models/salary_record.dart';
 import '../../models/salary_settings.dart';
 import '../../services/database_service.dart';
 import '../../services/salary_service.dart';
+import '../../services/shift_calendar_service.dart';
 import 'package:intl/intl.dart';
 
 class AddSalaryRecordScreen extends StatefulWidget {
@@ -71,7 +72,10 @@ class _AddSalaryRecordScreenState extends State<AddSalaryRecordScreen> {
     final monthlyOvertime = DatabaseService.getMonthlyTotal(year, month);
     _overtimeHoursController.text = monthlyOvertime.toString();
     
-    // TODO: Vardiya modülünden gece saatlerini çekmek mümkünse buraya eklenebilir
+    // Vardiya takviminden gece vardiyası sayısını çek
+    final nightShiftDays = ShiftCalendarService.countNightShiftsInMonth(year, month);
+    final nightShiftHours = nightShiftDays * 7.5; // Günde 7.5 saat
+    _nightShiftHoursController.text = nightShiftHours.toString();
   }
 
   Future<void> _selectDate(BuildContext context) async {

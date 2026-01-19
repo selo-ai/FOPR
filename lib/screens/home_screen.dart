@@ -8,7 +8,7 @@ import 'settings/settings_screen.dart';
 import 'notes/notes_screen.dart';
 import 'salary/salary_screen.dart';
 import '../models/salary_record.dart';
-import '../services/database_service.dart';
+import '../widgets/shift_calendar_widget.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -20,6 +20,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   double _monthlyTotal = 0;
   double _yearlyTotal = 0;
+  bool _isCalendarVisible = false;
 
   @override
   void initState() {
@@ -55,6 +56,27 @@ class _HomeScreenState extends State<HomeScreen> {
         child: ListView(
           padding: const EdgeInsets.all(20),
           children: [
+            // Vardiya Takvimi Toggle Butonu
+            _buildModuleCard(
+              context,
+              icon: Icons.calendar_month,
+              title: 'Vardiya Takvimi',
+              subtitle: _isCalendarVisible ? 'Gizlemek için dokunun' : 'Görüntülemek için dokunun',
+              onTap: () {
+                setState(() {
+                  _isCalendarVisible = !_isCalendarVisible;
+                });
+              },
+              isHighlighted: _isCalendarVisible,
+            ),
+            
+            if (_isCalendarVisible) ...[
+              const SizedBox(height: 8),
+              const ShiftCalendarWidget(),
+            ],
+            
+            const SizedBox(height: 16),
+
             // Header Stats
             _buildStatsHeader(monthName),
             const SizedBox(height: 32),
@@ -147,10 +169,19 @@ class _HomeScreenState extends State<HomeScreen> {
     required String subtitle,
     required VoidCallback onTap,
     bool enabled = true,
+    bool isHighlighted = false,
   }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Card(
+        color: isHighlighted ? Theme.of(context).primaryColor.withOpacity(0.05) : null,
+        elevation: isHighlighted ? 0 : 1,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: isHighlighted 
+            ? BorderSide(color: Theme.of(context).primaryColor, width: 1)
+            : BorderSide.none,
+        ),
         child: InkWell(
           onTap: enabled ? onTap : null,
           borderRadius: BorderRadius.circular(16),
@@ -163,14 +194,18 @@ class _HomeScreenState extends State<HomeScreen> {
                   height: 48,
                   decoration: BoxDecoration(
                     color: enabled
-                        ? Theme.of(context).colorScheme.primary.withOpacity(0.1)
+                        ? (isHighlighted 
+                            ? Theme.of(context).primaryColor 
+                            : Theme.of(context).colorScheme.primary.withOpacity(0.1))
                         : Colors.grey.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Icon(
                     icon,
                     color: enabled
-                        ? Theme.of(context).colorScheme.primary
+                        ? (isHighlighted 
+                            ? Colors.white 
+                            : Theme.of(context).colorScheme.primary)
                         : Colors.grey,
                   ),
                 ),
@@ -183,6 +218,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         title,
                         style: Theme.of(context).textTheme.titleMedium?.copyWith(
                               color: enabled ? null : Colors.grey,
+                              fontWeight: isHighlighted ? FontWeight.bold : null,
                             ),
                       ),
                       const SizedBox(height: 2),
@@ -197,8 +233,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 if (enabled)
                   Icon(
-                    Icons.chevron_right,
-                    color: Colors.grey.shade400,
+                    isHighlighted ? Icons.keyboard_arrow_down : Icons.chevron_right,
+                    color: isHighlighted 
+                        ? Theme.of(context).primaryColor 
+                        : Theme.of(context).colorScheme.primary.withOpacity(0.5),
                   ),
               ],
             ),

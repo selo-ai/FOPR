@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../../app.dart';
 import '../../models/settings.dart';
+import '../../models/shift_type.dart';
 import '../../services/database_service.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -19,6 +20,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final _monthlyQuotaController = TextEditingController();
   final _yearlyQuotaController = TextEditingController();
   DateTime? _startDate;
+  DateTime? _shiftStartDate;
 
   @override
   void initState() {
@@ -37,6 +39,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _yearlyQuotaController.text =
         _settings.yearlyQuota > 0 ? _settings.yearlyQuota.toString() : '';
     _startDate = _settings.startDate;
+    _shiftStartDate = _settings.shiftStartDate;
   }
 
   @override
@@ -104,6 +107,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
             icon: Icons.calendar_today_outlined,
             keyboardType: TextInputType.number,
           ),
+          const SizedBox(height: 32),
+
+          // Shift settings section
+          _buildSectionHeader('Vardiya Ayarları'),
+          const SizedBox(height: 12),
+          _buildShiftTypeSelector(),
+          const SizedBox(height: 12),
+          _buildShiftStartDateField(),
           const SizedBox(height: 40),
 
           // Save button
@@ -294,6 +305,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         double.tryParse(_monthlyQuotaController.text.replaceAll(',', '.')) ?? 0;
     _settings.yearlyQuota =
         double.tryParse(_yearlyQuotaController.text.replaceAll(',', '.')) ?? 0;
+    _settings.shiftStartDate = _shiftStartDate;
 
     await DatabaseService.saveSettings(_settings);
 
@@ -306,5 +318,85 @@ class _SettingsScreenState extends State<SettingsScreen> {
       );
       Navigator.pop(context);
     }
+  }
+
+  Widget _buildShiftTypeSelector() {
+    final shiftTypes = [
+      (ShiftType.night, 'Gece', Icons.nights_stay, Colors.indigo),
+      (ShiftType.morning, 'Sabah', Icons.wb_sunny, Colors.amber),
+      (ShiftType.evening, 'Akşam', Icons.wb_twilight, Colors.orange),
+    ];
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(8),
+        child: Row(
+          children: shiftTypes.map((item) {
+            final (type, label, icon, color) = item;
+            final isSelected = _settings.currentShiftTypeIndex == type.cycleIndex;
+            
+            return Expanded(
+              child: GestureDetector(
+                onTap: () => setState(() {
+                  _settings.currentShiftTypeIndex = type.cycleIndex;
+                }),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  decoration: BoxDecoration(
+                    color: isSelected ? color.withOpacity(0.2) : Colors.transparent,
+                    borderRadius: BorderRadius.circular(8),
+                    border: isSelected
+                        ? Border.all(color: color, width: 2)
+                        : null,
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(icon, color: isSelected ? color : Colors.grey),
+                      const SizedBox(height: 4),
+                      Text(
+                        label,
+                        style: TextStyle(
+                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          color: isSelected ? color : Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildShiftStartDateField() {
+    return Card(
+      child: ListTile(
+        leading: const Icon(Icons.calendar_month),
+        title: const Text('Vardiya Başlangıç Tarihi'),
+        subtitle: Text(
+          _shiftStartDate != null
+              ? DateFormat('dd MMMM yyyy', 'tr_TR').format(_shiftStartDate!)
+              : 'Bugün (varsayılan)',
+        ),
+        trailing: const Icon(Icons.edit),
+        onTap: () async {
+          final picked = await showDatePicker(
+            context: context,
+            initialDate: _shiftStartDate ?? DateTime.now(),
+            firstDate: DateTime(2020),
+            lastDate: DateTime(2030),
+            locale: const Locale('tr', 'TR'),
+          );
+          if (picked != null) {
+            setState(() {
+              _shiftStartDate = picked;
+            });
+          }
+        },
+      ),
+    );
   }
 }

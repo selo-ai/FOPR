@@ -147,77 +147,94 @@ class _SalaryScreenState extends State<SalaryScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Maaş Takip'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SalarySettingsScreen()),
-              ).then((_) => _loadRecords());
-            },
+      ),
+      body: Column(
+        children: [
+          // Prominent Settings Button
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            color: Colors.blue.shade50,
+            child: ElevatedButton.icon(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const SalarySettingsScreen()),
+                ).then((_) => _loadRecords());
+              },
+              icon: const Icon(Icons.settings),
+              label: const Text('MAAŞ AYARLARINI DÜZENLE'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
+          ),
+          
+          Expanded(
+            child: _records.isEmpty
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.account_balance_wallet_outlined, size: 64, color: Colors.grey.shade400),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Henüz maaş kaydı yok',
+                        style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
+                      ),
+                      const SizedBox(height: 24),
+                      ElevatedButton.icon(
+                        onPressed: _addRecord,
+                        icon: const Icon(Icons.add),
+                        label: const Text('Maaş Hesapla'),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: _records.length,
+                  itemBuilder: (context, index) {
+                    final record = _records[index];
+                    final date = DateTime(record.year, record.month);
+                    
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 12),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
+                          child: Text(
+                            DateFormat('MMM', 'tr_TR').format(date).toUpperCase(),
+                            style: TextStyle(
+                              color: Theme.of(context).primaryColor,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ),
+                        title: Text(
+                          DateFormat('MMMM yyyy', 'tr_TR').format(date),
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        subtitle: Text(
+                          'Net: ${NumberFormat.currency(symbol: '₺', decimalDigits: 2, locale: 'tr_TR').format(record.totalNetPay)}',
+                          style: const TextStyle(
+                            color: Colors.green,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
+                        ),
+                        trailing: const Icon(Icons.chevron_right),
+                        onTap: () => _openDetail(record),
+                      ),
+                    );
+                  },
+                ),
           ),
         ],
       ),
-      body: _records.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.account_balance_wallet_outlined, size: 64, color: Colors.grey.shade400),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Henüz maaş kaydı yok',
-                    style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton.icon(
-                    onPressed: _addRecord,
-                    icon: const Icon(Icons.add),
-                    label: const Text('Maaş Hesapla'),
-                  ),
-                ],
-              ),
-            )
-          : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: _records.length,
-              itemBuilder: (context, index) {
-                final record = _records[index];
-                final date = DateTime(record.year, record.month);
-                
-                return Card(
-                  margin: const EdgeInsets.only(bottom: 12),
-                  child: ListTile(
-                    leading: CircleAvatar(
-                      backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
-                      child: Text(
-                        DateFormat('MMM', 'tr_TR').format(date).toUpperCase(),
-                        style: TextStyle(
-                          color: Theme.of(context).primaryColor,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                    title: Text(
-                      DateFormat('MMMM yyyy', 'tr_TR').format(date),
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text(
-                      'Net: ${NumberFormat.currency(symbol: '₺', decimalDigits: 2, locale: 'tr_TR').format(record.totalNetPay)}',
-                      style: const TextStyle(
-                        color: Colors.green,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 16,
-                      ),
-                    ),
-                    trailing: const Icon(Icons.chevron_right),
-                    onTap: () => _openDetail(record),
-                  ),
-                );
-              },
-            ),
       floatingActionButton: FloatingActionButton(
         onPressed: _addRecord,
         child: const Icon(Icons.add),

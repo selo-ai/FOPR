@@ -138,26 +138,13 @@ class _SalarySettingsScreenState extends State<SalarySettingsScreen> {
             _buildNumberField('Yakacak Yardımı (TL)', _fuelAllowanceController),
 
             _buildSectionHeader('Kesintiler & Özel Sigortalar'),
-            SwitchListTile(
-              title: const Text('Sendika Üyeliği (1 Günlük Yevmiye)'),
-              value: _settings.hasUnion,
-              onChanged: (val) => setState(() => _settings.hasUnion = val),
-            ),
-            // Removed rate input as it's fixed 7.5 hours
+            _buildSwitch('Sendika Üyeliği (1 Günlük Yevmiye)', _settings.hasUnion, (val) => setState(() => _settings.hasUnion = val)),
 
-            SwitchListTile(
-              title: const Text('BES Katılımı'),
-              value: _settings.hasBES,
-              onChanged: (val) => setState(() => _settings.hasBES = val),
-            ),
+            _buildSwitch('BES Kesintisi', _settings.hasBES, (val) => setState(() => _settings.hasBES = val)),
             if (_settings.hasBES)
               _buildNumberField('BES Tutarı (TL)', _besAmountController),
 
-            SwitchListTile(
-              title: const Text('Sağlık Sigortası (ÖSS - TSS)'),
-              value: _settings.hasHealthInsurance,
-              onChanged: (val) => setState(() => _settings.hasHealthInsurance = val),
-            ),
+            _buildSwitch('Sağlık Sigortası (ÖSS - TSS)', _settings.hasHealthInsurance, (val) => setState(() => _settings.hasHealthInsurance = val)),
             if (_settings.hasHealthInsurance)
               Row(
                 children: [
@@ -167,14 +154,11 @@ class _SalarySettingsScreenState extends State<SalarySettingsScreen> {
                 ],
               ),
 
-            SwitchListTile(
-              title: const Text('İcra / Nafaka Kesintisi'),
-              value: _settings.hasExecution,
-              onChanged: (val) => setState(() => _settings.hasExecution = val),
-            ),
+            _buildSwitch('İcra / Nafaka Kesintisi', _settings.hasExecution, (val) => setState(() => _settings.hasExecution = val)),
             if (_settings.hasExecution)
               _buildNumberField('Kesinti Tutarı (TL)', _executionAmountController),
 
+            _buildSectionHeader('Diğer Kesintiler'),
             _buildNumberField('Öğrenim Fonu (TL)', _educationFundController),
             _buildNumberField('Vakıf Kesintisi (TL)', _foundationDeductionController),
             
@@ -231,6 +215,24 @@ class _SalarySettingsScreenState extends State<SalarySettingsScreen> {
           ),
           // onTap ve eski mantık yerine Focus widget'ı kullanıyoruz
         ),
+      ),
+    );
+  }
+  Widget _buildSwitch(String title, bool value, Function(bool) onChanged) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(child: Text(title, style: const TextStyle(fontSize: 16))),
+          Transform.scale(
+            scale: 0.8, // %80 boyuta küçült
+            child: Switch(
+              value: value, 
+              onChanged: onChanged,
+            ),
+          ),
+        ],
       ),
     );
   }

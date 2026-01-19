@@ -36,6 +36,13 @@ class Settings extends HiveObject {
   @HiveField(9, defaultValue: false)
   bool salarySettingsReminderShown;
 
+  // Vardiya Ayarları
+  @HiveField(10, defaultValue: 0)
+  int currentShiftTypeIndex; // 0: night, 1: morning, 2: evening
+
+  @HiveField(11)
+  DateTime? shiftStartDate; // Vardiya döngüsünün başlangıç tarihi
+
   Settings({
     this.fullName,
     this.employeeId,
@@ -46,6 +53,8 @@ class Settings extends HiveObject {
     this.themeModeIndex = 0,
     this.overtimeTutorialShown = false,
     this.salarySettingsReminderShown = false,
+    this.currentShiftTypeIndex = 0,
+    this.shiftStartDate,
   });
 
   ThemeMode get themeMode {

@@ -27,13 +27,15 @@ class SettingsAdapter extends TypeAdapter<Settings> {
       overtimeTutorialShown: fields[7] == null ? false : fields[7] as bool,
       salarySettingsReminderShown:
           fields[9] == null ? false : fields[9] as bool,
+      currentShiftTypeIndex: fields[10] == null ? 0 : fields[10] as int,
+      shiftStartDate: fields[11] as DateTime?,
     );
   }
 
   @override
   void write(BinaryWriter writer, Settings obj) {
     writer
-      ..writeByte(9)
+      ..writeByte(11)
       ..writeByte(0)
       ..write(obj.fullName)
       ..writeByte(1)
@@ -51,7 +53,11 @@ class SettingsAdapter extends TypeAdapter<Settings> {
       ..writeByte(7)
       ..write(obj.overtimeTutorialShown)
       ..writeByte(9)
-      ..write(obj.salarySettingsReminderShown);
+      ..write(obj.salarySettingsReminderShown)
+      ..writeByte(10)
+      ..write(obj.currentShiftTypeIndex)
+      ..writeByte(11)
+      ..write(obj.shiftStartDate);
   }
 
   @override
