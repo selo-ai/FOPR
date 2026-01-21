@@ -1,16 +1,21 @@
-# fopr
+# FOPR - Vardiya ve Bordro Asistanı
 
-A new Flutter project.
+FOPR, vardiyalı çalışanlar için tasarlanmış profesyonel bir iş takip ve maaş hesaplama uygulamasıdır. Kullanıcıların vardiya döngülerini takip etmelerini, maaş kesintilerini otomatik hesaplamalarını ve yıllık izinlerini yönetmelerini sağlar.
 
-## Getting Started
+## 🚀 Özellikler
 
-This project is a starting point for a Flutter application.
+- **Vardiya Takvimi:** Otomatik döngülü (Gece, Sabah, Akşam) ve resmi tatil entegrasyonlu takvim.
+- **Bordro Hesaplama:** Brüt/Net maaş, SGK, vergi dilimleri ve otomatik BES hesaplaması.
+- **İzin Takibi:** Yıllık izin hak edişi ve kullanım takibi.
+- **Kişisel Notlar:** İşle ilgili önemli notların ve verilerin saklanması.
+- **Gizlilik:** Tüm veriler yerel olarak (Hive) cihazda saklanır, internet gerektirmez.
 
-A few resources to get you started if this is your first Flutter project:
+## 🛠️ Teknik Detaylar
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- **Framework:** Flutter
+- **Veritabanı:** Hive (Local)
+- **Tema:** Özel mavi kurumsal kimlik (#003478)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 👤 Geliştirici
+- Selahattin Gültekin
+
