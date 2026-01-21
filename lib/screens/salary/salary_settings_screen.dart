@@ -140,9 +140,7 @@ class _SalarySettingsScreenState extends State<SalarySettingsScreen> {
             _buildSectionHeader('Kesintiler & Özel Sigortalar'),
             _buildSwitch('Sendika Üyeliği (1 Günlük Yevmiye)', _settings.hasUnion, (val) => setState(() => _settings.hasUnion = val)),
 
-            _buildSwitch('BES Kesintisi', _settings.hasBES, (val) => setState(() => _settings.hasBES = val)),
-            if (_settings.hasBES)
-              _buildNumberField('BES Tutarı (TL)', _besAmountController),
+            _buildSwitch('Vakıf BES (Brüt %6)', _settings.hasBES, (val) => setState(() => _settings.hasBES = val)),
 
             _buildSwitch('Sağlık Sigortası (ÖSS - TSS)', _settings.hasHealthInsurance, (val) => setState(() => _settings.hasHealthInsurance = val)),
             if (_settings.hasHealthInsurance)

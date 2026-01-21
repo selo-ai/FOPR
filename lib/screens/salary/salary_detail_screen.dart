@@ -41,7 +41,7 @@ class SalaryDetailScreen extends StatelessWidget {
     
     double privateDeductions = 0;
     if (settings.hasUnion) privateDeductions += record.totalGrossPay * (settings.unionRate / 100);
-    if (settings.hasBES) privateDeductions += settings.besAmount;
+    if (settings.hasBES) privateDeductions += record.totalGrossPay * 0.06;
     privateDeductions += settings.healthInsurance;
     privateDeductions += settings.educationFund;
     privateDeductions += settings.foundationDeduction;
@@ -83,7 +83,7 @@ class SalaryDetailScreen extends StatelessWidget {
 
             _buildSection('ÖZEL KESİNTİLER', [
                 if (settings.hasUnion) _buildRow('Sendika', settings.hourlyGrossRate * 7.5),
-                if (settings.hasBES) _buildRow('BES', settings.besAmount),
+                if (settings.hasBES) _buildRow('Vakıf BES (%6)', record.totalGrossPay * 0.06),
                 if (settings.hasHealthInsurance) _buildRow('Sağlık Sig. (ÖSS)', settings.ossPersonCount * settings.ossCostPerPerson),
                 if (settings.hasExecution) _buildRow('İcra / Nafaka', settings.executionAmount),
                 if (settings.educationFund > 0) _buildRow('Öğrenim Fonu', settings.educationFund),

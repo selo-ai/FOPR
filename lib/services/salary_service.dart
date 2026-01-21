@@ -159,7 +159,8 @@ class SalaryService {
     }
     
     if (settings.hasBES) {
-      totalPrivateDeductions += settings.besAmount;
+      // Vakıf BES: Brüt maaşın %6'sı
+      totalPrivateDeductions += grossPay * 0.06;
     }
     
     if (settings.hasHealthInsurance) {

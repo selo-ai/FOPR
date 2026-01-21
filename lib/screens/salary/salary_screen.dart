@@ -122,15 +122,16 @@ class _SalaryScreenState extends State<SalaryScreen> {
                   children: [
                        Icon(Icons.warning_amber_rounded, color: Colors.red, size: 32),
                        SizedBox(width: 10),
-                       Text("YASAL UYARI", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
+                       Text("UYARI", style: TextStyle(color: Colors.red, fontWeight: FontWeight.bold)),
                   ],
               ),
               content: const Text(
                   "Bu modüldeki hesaplamalar yaklaşık değerlerdir ve bilgilendirme amaçlıdır.\n\n"
-                  "Resmi bordronuzla kuruş farkları veya vergi dilimi kaynaklı sapmalar olabilir. Kesin sonuçlar için lütfen muhasebe departmanınızla görüşün.",
+                  "Resmi bordronuzla ücret farkları veya vergi dilimi kaynaklı sapmalar olabilir. Kesin sonuçlar için lütfen muhasebe departmanınızla görüşün.",
                   textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 15),
               ),
+              actionsAlignment: MainAxisAlignment.center,
               actions: [
                   ElevatedButton(
                       style: ElevatedButton.styleFrom(backgroundColor: Colors.red, foregroundColor: Colors.white),
@@ -154,7 +155,7 @@ class _SalaryScreenState extends State<SalaryScreen> {
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(16),
-            color: Colors.blue.shade50,
+            color: Theme.of(context).scaffoldBackgroundColor,
             child: ElevatedButton.icon(
               onPressed: () {
                 Navigator.push(

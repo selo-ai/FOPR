@@ -143,6 +143,13 @@ class DatabaseService {
         .fold(0.0, (sum, l) => sum + l.days);
   }
 
+  /// Belirli bir ayda kullanılan izin günlerini hesaplar
+  static double getUsedLeaveDaysByMonth(int year, int month) {
+    return getAllLeaves()
+        .where((l) => l.startDate.year == year && l.startDate.month == month)
+        .fold(0.0, (sum, l) => sum + l.days);
+  }
+
   /// Kalan yıllık izin günlerini hesaplar
   static double getRemainingAnnualLeaveDays(int year) {
     final entitlement = calculateAnnualEntitlement();

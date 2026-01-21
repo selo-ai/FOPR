@@ -20,12 +20,55 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   double _monthlyTotal = 0;
   double _yearlyTotal = 0;
+  double _monthlyLeave = 0;
+  double _yearlyLeaveRemaining = 0;
   bool _isCalendarVisible = false;
 
   @override
   void initState() {
     super.initState();
     _loadData();
+    // WidgetsBinding is used to show dialog after first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _checkOnboarding();
+    });
+  }
+
+  void _checkOnboarding() {
+    final settings = DatabaseService.getSettings();
+    if (settings.fullName == null || settings.fullName!.isEmpty) {
+      _showOnboardingDialog();
+    }
+  }
+
+  void _showOnboardingDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        actionsAlignment: MainAxisAlignment.center,
+        title: const Row(
+          children: [
+            Icon(Icons.info_outline, color: Colors.blue),
+            SizedBox(width: 10),
+            Text('Profil Bilgisi Eksik'),
+          ],
+        ),
+        content: const Text(
+          'Uygulamayı verimli kullanabilmek için lütfen ayarlar menüsünden Ad Soyad ve diğer profil bilgilerinizi tamamlayınız.',
+          style: TextStyle(fontSize: 14),
+        ),
+        actions: [
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context); // Diyaloğu kapat
+              _navigateToSettings(context); // Ayarlara git
+            },
+            child: const Text('Ayarlara Git'),
+          ),
+        ],
+      ),
+    );
   }
 
   void _loadData() {
@@ -33,14 +76,13 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       _monthlyTotal = DatabaseService.getMonthlyTotal(now.year, now.month);
       _yearlyTotal = DatabaseService.getYearlyTotal(now.year);
+      _monthlyLeave = DatabaseService.getUsedLeaveDaysByMonth(now.year, now.month);
+      _yearlyLeaveRemaining = DatabaseService.getRemainingAnnualLeaveDays(now.year);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final now = DateTime.now();
-    final monthName = DateFormat('MMMM', 'tr_TR').format(now);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('FOPR'),
@@ -78,7 +120,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 16),
 
             // Header Stats
-            _buildStatsHeader(monthName),
+            _buildStatsHeader(),
             const SizedBox(height: 32),
 
             // Modules
@@ -104,8 +146,8 @@ class _HomeScreenState extends State<HomeScreen> {
             _buildModuleCard(
               context,
               icon: Icons.beach_access_outlined,
-              title: 'Yıllık İzin',
-              subtitle: '${DatabaseService.getRemainingAnnualLeaveDays(DateTime.now().year).toStringAsFixed(0)} gün kaldı',
+              title: 'İzin',
+              subtitle: 'İzin kayıtları ve takibi',
               onTap: () => _navigateToLeave(context),
             ),
             _buildSalaryCard(context),
@@ -129,33 +171,84 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildStatsHeader(String monthName) {
+  Widget _buildStatsHeader() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildStatColumn(
+              title: 'FAZLA MESAİ',
+              monthlyValue: _monthlyTotal.toStringAsFixed(1),
+              yearlyValue: _yearlyTotal.toStringAsFixed(1),
+              unit: 'saat',
+            ),
+          ),
+          Container(
+            height: 40,
+            width: 1,
+            color: Colors.grey.withOpacity(0.2),
+          ),
+          Expanded(
+            child: _buildStatColumn(
+              title: 'YILLIK İZİN',
+              monthlyValue: _monthlyLeave.toStringAsFixed(0),
+              yearlyValue: _yearlyLeaveRemaining.toStringAsFixed(0),
+              unit: 'gün',
+              yearlyLabel: 'Kalan',
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatColumn({
+    required String title,
+    required String monthlyValue,
+    required String yearlyValue,
+    required String unit,
+    String monthlyLabel = 'Aylık',
+    String yearlyLabel = 'Yıllık',
+  }) {
     return Column(
       children: [
-        // Monthly total - big and prominent
         Text(
-          '${_monthlyTotal.toStringAsFixed(1)} saat',
-          style: Theme.of(context).textTheme.displayLarge,
-        ),
-        const SizedBox(height: 4),
-        Text(
-          '$monthName mesaisi',
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
-        const SizedBox(height: 24),
-        // Yearly total - smaller
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.secondary.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(20),
+          title,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey.shade500,
+            letterSpacing: 1.0,
           ),
-          child: Text(
-            'Yıllık: ${_yearlyTotal.toStringAsFixed(1)} saat',
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.secondary,
-                  fontWeight: FontWeight.w500,
-                ),
+        ),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _buildStatItem(monthlyValue, monthlyLabel, unit),
+            _buildStatItem(yearlyValue, yearlyLabel, unit),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatItem(String value, String label, String unit) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        Text(
+          '$label ($unit)',
+          style: TextStyle(
+            fontSize: 9,
+            color: Colors.grey.shade500,
           ),
         ),
       ],
