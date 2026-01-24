@@ -132,7 +132,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Column(
               children: [
                 Text(
-                  'v1.0.0',
+                  'v1.0.1',
                   style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
                 ),
                 const SizedBox(height: 4),
