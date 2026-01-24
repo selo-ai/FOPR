@@ -31,9 +31,29 @@ class SalaryService {
     // Standart kabul: Normal çalışma içinde gece primi ekstra verilir.
     total += record.nightShiftHours * settings.hourlyGrossRate * 0.20;
     
-    // Hafta Tatili: Tatil Saati × Saatlik Ücret × 1.5
-    total += record.weekendHours * settings.hourlyGrossRate * 1.5;
+    // Hafta Tatili: Tatil Saati (Çalışılmayan Pazar) × Saatlik Ücret × 1.0
+    total += record.weekendHours * settings.hourlyGrossRate * 1.0;
     
+    // Genel Tatil (Resmi/Dini Bayram - Çalışılmayan): Saatlik Ücret × 1.0
+    total += record.publicHolidayHours * settings.hourlyGrossRate * 1.0;
+
+    // Yıllık İzin (Ücretli İzin): Gün × 7.5 × Saatlik Ücret × 1.0
+    total += record.annualLeaveDays * 7.5 * settings.hourlyGrossRate;
+
+    // Vardiya (Shift Allowance): Aylık Normal Çalışma × Saatlik Ücret × %10
+    total += record.normalHours * settings.hourlyGrossRate * 0.10;
+    
+    // Otosan Yardımı (Manuel Giriş)
+    total += record.otosanAllowance;
+    
+    // Diğer Sosyal Yardımlar (Manuel)
+    total += record.holidayAllowance;
+    total += record.leaveAllowance;
+    total += record.tahsilAllowance;
+    total += record.shoeAllowance;
+    total += record.jobIndemnity;
+    total += record.tisAdvance;
+
     // İkramiye
     total += record.bonusAmount;
     

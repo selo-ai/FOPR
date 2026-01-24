@@ -1,0 +1,37 @@
+{
+  "grup": "1. Grup",
+  "anlasma_tutarlar": {
+    "kurban": 15536.65,
+    "ramazan": 10273.93,
+    "yakacak": 3341.82,
+    "yillik_izin": 11201.71,
+    "evlenme": 18719.66,
+    "dogum": 11450.18,
+    "olum_kendisi": 15471.31,
+    "olum_is_kazasi": 32488.15,
+    "olum_yakini": 7891.80,
+    "olum_tazminat": 77351.97,
+    "askerlik": 11602.91,
+    "cocuk": 310.02,
+    "ogrenim_anasinifi": 4559.10,
+    "ogrenim_ilkokul": 4796.17,
+    "ogrenim_ortaokul": 5416.21,
+    "ogrenim_lise": 6654.01,
+    "ogrenim_yuksek": 9592.35,
+    "yemek": 193.76,
+    "vasita": 186.92,
+    "ayakkabi": 2785.61,
+    "yolluk_gunubirlik": 264.43,
+    "yolluk_yatili_net": 1098.74
+  },
+  "saglik_sigortasi": {
+    "tamamlayici_saglik_sigortasi": {
+      "es": 1119.00,
+      "cocuklar": 1119.00
+    },
+    "ozel_saglik_sigortasi": {
+      "es": 1798.88,
+      "cocuklar": 718.86
+    }
+  }
+}

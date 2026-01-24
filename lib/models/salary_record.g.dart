@@ -30,13 +30,23 @@ class SalaryRecordAdapter extends TypeAdapter<SalaryRecord> {
       cachedHourlyRate: fields[10] as double,
       totalGrossPay: fields[11] as double,
       totalNetPay: fields[12] as double,
+      totalSundayHours: fields[13] == null ? 0.0 : fields[13] as double,
+      publicHolidayHours: fields[14] == null ? 0.0 : fields[14] as double,
+      annualLeaveDays: fields[15] == null ? 0.0 : fields[15] as double,
+      otosanAllowance: fields[16] == null ? 0.0 : fields[16] as double,
+      holidayAllowance: fields[17] == null ? 0.0 : fields[17] as double,
+      leaveAllowance: fields[18] == null ? 0.0 : fields[18] as double,
+      tahsilAllowance: fields[19] == null ? 0.0 : fields[19] as double,
+      shoeAllowance: fields[20] == null ? 0.0 : fields[20] as double,
+      jobIndemnity: fields[21] == null ? 0.0 : fields[21] as double,
+      tisAdvance: fields[22] == null ? 0.0 : fields[22] as double,
     );
   }
 
   @override
   void write(BinaryWriter writer, SalaryRecord obj) {
     writer
-      ..writeByte(13)
+      ..writeByte(23)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -62,7 +72,27 @@ class SalaryRecordAdapter extends TypeAdapter<SalaryRecord> {
       ..writeByte(11)
       ..write(obj.totalGrossPay)
       ..writeByte(12)
-      ..write(obj.totalNetPay);
+      ..write(obj.totalNetPay)
+      ..writeByte(13)
+      ..write(obj.totalSundayHours)
+      ..writeByte(14)
+      ..write(obj.publicHolidayHours)
+      ..writeByte(15)
+      ..write(obj.annualLeaveDays)
+      ..writeByte(16)
+      ..write(obj.otosanAllowance)
+      ..writeByte(17)
+      ..write(obj.holidayAllowance)
+      ..writeByte(18)
+      ..write(obj.leaveAllowance)
+      ..writeByte(19)
+      ..write(obj.tahsilAllowance)
+      ..writeByte(20)
+      ..write(obj.shoeAllowance)
+      ..writeByte(21)
+      ..write(obj.jobIndemnity)
+      ..writeByte(22)
+      ..write(obj.tisAdvance);
   }
 
   @override

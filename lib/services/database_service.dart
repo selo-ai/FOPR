@@ -4,6 +4,7 @@ import '../models/settings.dart';
 import '../models/leave.dart';
 import '../models/leave_type.dart';
 import '../models/shift_type.dart';
+import '../utils/holiday_utils.dart';
 
 import '../models/note.dart';
 import '../models/salary_settings.dart';
@@ -90,9 +91,57 @@ class DatabaseService {
     return getOvertimesByYear(year).fold(0.0, (sum, o) => sum + o.hours);
   }
 
+  static double getSundayOvertimeTotal(int year, int month) {
+    return getOvertimesByMonth(year, month)
+        .where((o) => o.date.weekday == DateTime.sunday)
+        .fold(0.0, (sum, o) => sum + o.hours);
+  }
+
+  static double getPublicHolidayOvertimeTotal(int year, int month) {
+    return getOvertimesByMonth(year, month)
+        .where((o) {
+            // Pazar hariç ve Resmi Tatil olanlar
+            if (o.date.weekday == DateTime.sunday) return false;
+            return HolidayUtils.getHolidayAmount(o.date) > 0;
+        })
+        .fold(0.0, (sum, o) => sum + o.hours);
+  }
+
   // ============ Leave Operations ============
 
   static Box<Leave> get leaveBox => _leaveBox;
+
+  static List<Leave> getLeavesByMonth(int year, int month) {
+    if (!_leaveBox.isOpen) return [];
+    
+    final firstDay = DateTime(year, month, 1);
+    final lastDay = DateTime(year, month + 1, 0);
+
+    return _leaveBox.values.where((l) {
+      final start = DateTime(l.startDate.year, l.startDate.month, l.startDate.day);
+      final end = DateTime(l.endDate.year, l.endDate.month, l.endDate.day);
+      
+      return start.compareTo(lastDay) <= 0 && end.compareTo(firstDay) >= 0;
+    }).toList();
+  }
+
+  static double getAnnualLeaveDaysInMonth(int year, int month) {
+    final leaves = getLeavesByMonth(year, month);
+    double totalDays = 0;
+    
+    final monthFirst = DateTime(year, month, 1);
+    final monthLast = DateTime(year, month + 1, 0);
+
+    for (var leave in leaves) {
+      if (leave.type != LeaveType.annual) continue;
+
+      DateTime start = leave.startDate.isBefore(monthFirst) ? monthFirst : leave.startDate;
+      DateTime end = leave.endDate.isAfter(monthLast) ? monthLast : leave.endDate;
+      
+      totalDays += Leave.calculateDays(start, end, false, excludeHolidays: true);
+    }
+    return totalDays;
+  }
 
   static List<Leave> getAllLeaves() {
     return _leaveBox.values.toList()

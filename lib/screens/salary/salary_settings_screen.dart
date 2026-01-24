@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../models/salary_settings.dart';
 import '../../services/database_service.dart';
+import '../../services/social_service.dart';
 
 class SalarySettingsScreen extends StatefulWidget {
   const SalarySettingsScreen({super.key});
@@ -42,10 +43,12 @@ class _SalarySettingsScreenState extends State<SalarySettingsScreen> {
     _hourlyRateController = TextEditingController(text: _settings.hourlyGrossRate.toString());
     _weeklyHoursController = TextEditingController(text: _settings.weeklyWorkHours.toString());
     _childCountController = TextEditingController(text: _settings.childCount.toString());
-    _childAllowanceController = TextEditingController(text: _settings.childAllowancePerChild.toString());
+    
+    // Use values from sosyal.json
+    _childAllowanceController = TextEditingController(text: SocialService.childAmount.toString());
     _unionRateController = TextEditingController(text: _settings.unionRate.toString());
     _besAmountController = TextEditingController(text: _settings.besAmount.toString());
-    _fuelAllowanceController = TextEditingController(text: _settings.fuelAllowance.toString());
+    _fuelAllowanceController = TextEditingController(text: SocialService.fuelAmount.toString());
     _healthInsuranceController = TextEditingController(text: _settings.healthInsurance.toString());
     _educationFundController = TextEditingController(text: _settings.educationFund.toString());
     _foundationDeductionController = TextEditingController(text: _settings.foundationDeduction.toString());
@@ -70,11 +73,17 @@ class _SalarySettingsScreenState extends State<SalarySettingsScreen> {
     _settings.unionRate = double.tryParse(_unionRateController.text) ?? 0.0;
     _settings.besAmount = double.tryParse(_besAmountController.text) ?? 0.0;
     _settings.fuelAllowance = double.tryParse(_fuelAllowanceController.text) ?? 0.0;
-    _settings.healthInsurance = double.tryParse(_healthInsuranceController.text) ?? 0.0;
+    
+    // Update calculated health insurance amount
+    if (_settings.hasHealthInsurance) {
+        _settings.healthInsurance = _calculateHealthInsuranceTotal();
+    } else {
+        _settings.healthInsurance = 0.0;
+    }
+
     _settings.educationFund = double.tryParse(_educationFundController.text) ?? 0.0;
     _settings.foundationDeduction = double.tryParse(_foundationDeductionController.text) ?? 0.0;
-    _settings.ossPersonCount = int.tryParse(_ossPersonCountController.text) ?? 0;
-    _settings.ossCostPerPerson = double.tryParse(_ossCostPerPersonController.text) ?? 0.0;
+    // _obsPersonCount and _ossCost left as is or ignored for now
     _settings.executionAmount = double.tryParse(_executionAmountController.text) ?? 0.0;
 
     await _settings.save();
@@ -136,20 +145,115 @@ class _SalarySettingsScreenState extends State<SalarySettingsScreen> {
               ],
             ),
             _buildNumberField('Yakacak Yardımı (TL)', _fuelAllowanceController),
-
+            
+            
             _buildSectionHeader('Kesintiler & Özel Sigortalar'),
             _buildSwitch('Sendika Üyeliği (1 Günlük Yevmiye)', _settings.hasUnion, (val) => setState(() => _settings.hasUnion = val)),
 
             _buildSwitch('Vakıf BES (Brüt %6)', _settings.hasBES, (val) => setState(() => _settings.hasBES = val)),
 
-            _buildSwitch('Sağlık Sigortası (ÖSS - TSS)', _settings.hasHealthInsurance, (val) => setState(() => _settings.hasHealthInsurance = val)),
+            _buildSwitch('Sağlık Sigortası', _settings.hasHealthInsurance, (val) => setState(() => _settings.hasHealthInsurance = val)),
             if (_settings.hasHealthInsurance)
-              Row(
-                children: [
-                  Expanded(child: _buildNumberField('Kişi Sayısı', _ossPersonCountController, isInt: true)),
-                  const SizedBox(width: 16),
-                  Expanded(child: _buildNumberField('Kişi Başı (TL)', _ossCostPerPersonController)),
-                ],
+              Container(
+                margin: const EdgeInsets.only(bottom: 16, top: 8),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade50,
+                  border: Border.all(color: Colors.grey.shade300),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Type Selection
+                    Row(
+                      children: [
+                        const Text('Tür: ', style: TextStyle(fontWeight: FontWeight.bold)),
+                        const SizedBox(width: 8),
+                        ChoiceChip(
+                          label: const Text('TSS'),
+                          selected: _settings.healthInsuranceType == 'tss',
+                          onSelected: (selected) {
+                            if (selected) setState(() => _settings.healthInsuranceType = 'tss');
+                          },
+                        ),
+                        const SizedBox(width: 8),
+                        ChoiceChip(
+                          label: const Text('ÖSS'),
+                          selected: _settings.healthInsuranceType == 'oss',
+                          onSelected: (selected) {
+                            if (selected) setState(() => _settings.healthInsuranceType = 'oss');
+                          },
+                        ),
+                      ],
+                    ),
+                    const Divider(),
+
+                    // Self (Only for ÖSS)
+                    if (_settings.healthInsuranceType == 'oss')
+                       ListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('Tüm Aile (Kendisi + Eş)'),
+                        subtitle: Text('${(2 * SocialService.getHealthInsuranceSpouseAmount('oss')).toStringAsFixed(2)} TL (Zorunlu)'),
+                        trailing: const Icon(Icons.lock, color: Colors.orange),
+                        dense: true,
+                       ),
+
+                    // Spouse Selection (Only for TSS)
+                    if (_settings.healthInsuranceType == 'tss')
+                      SwitchListTile(
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('Eş'),
+                        subtitle: Text('${SocialService.getHealthInsuranceSpouseAmount(_settings.healthInsuranceType)} TL'),
+                        value: _settings.healthInsuranceHasSpouse,
+                        onChanged: (val) => setState(() => _settings.healthInsuranceHasSpouse = val),
+                        dense: true,
+                      ),
+                    
+                    // Child Counter
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text('Çocuklar', style: TextStyle(fontSize: 16)),
+                            Text('${SocialService.getHealthInsuranceChildAmount(_settings.healthInsuranceType)} TL/çocuk', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                             IconButton(
+                                icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
+                                onPressed: _settings.healthInsuranceChildCount > 0 ? () => setState(() => _settings.healthInsuranceChildCount--) : null,
+                             ),
+                             Text('${_settings.healthInsuranceChildCount}', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                             IconButton(
+                                icon: const Icon(Icons.add_circle_outline, color: Colors.green),
+                                onPressed: () => setState(() => _settings.healthInsuranceChildCount++),
+                             ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const Divider(),
+                    
+                    // Total Result
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text('Toplam İndirim:', style: TextStyle(fontWeight: FontWeight.bold)),
+                          Text(
+                            '${_calculateHealthInsuranceTotal().toStringAsFixed(2)} TL', 
+                            style: TextStyle(fontWeight: FontWeight.bold, color: Theme.of(context).primaryColor, fontSize: 16)
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
               ),
 
             _buildSwitch('İcra / Nafaka Kesintisi', _settings.hasExecution, (val) => setState(() => _settings.hasExecution = val)),
@@ -157,7 +261,7 @@ class _SalarySettingsScreenState extends State<SalarySettingsScreen> {
               _buildNumberField('Kesinti Tutarı (TL)', _executionAmountController),
 
             _buildSectionHeader('Diğer Kesintiler'),
-            _buildNumberField('Öğrenim Fonu (TL)', _educationFundController),
+            _buildNumberField('KEV Finansman (TL)', _educationFundController),
             _buildNumberField('Vakıf Kesintisi (TL)', _foundationDeductionController),
             
             const SizedBox(height: 32),
@@ -233,5 +337,30 @@ class _SalarySettingsScreenState extends State<SalarySettingsScreen> {
         ],
       ),
     );
+  }
+  double _calculateHealthInsuranceTotal() {
+    double total = 0;
+    String type = _settings.healthInsuranceType; // 'oss' or 'tss'
+    
+    // Validate type just in case
+    if (type != 'oss' && type != 'tss') type = 'tss';
+
+    // If OSS, Self AND Spouse are mandatory.
+    // Logic: Self (Spouse Price) + Spouse (Spouse Price) + Children
+    if (type == 'oss') {
+        // Kendisi + Eş (2 x Spouse Price)
+        total += 2 * SocialService.getHealthInsuranceSpouseAmount('oss');
+    } else {
+        // TSS logic (Self is free/not included, Spouse is optional)
+        if (_settings.healthInsuranceHasSpouse) {
+            total += SocialService.getHealthInsuranceSpouseAmount(type);
+        }
+    }
+    
+    if (_settings.healthInsuranceChildCount > 0) {
+      total += _settings.healthInsuranceChildCount * SocialService.getHealthInsuranceChildAmount(type);
+    }
+    
+    return total;
   }
 }

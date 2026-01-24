@@ -4,6 +4,7 @@ import '../../models/salary_settings.dart';
 import '../../services/database_service.dart';
 import '../../services/salary_service.dart'; // To access helper calculation methods for display
 import 'package:intl/intl.dart';
+import 'add_salary_record_screen.dart';
 
 class SalaryDetailScreen extends StatelessWidget {
   final SalaryRecord record;
@@ -24,7 +25,11 @@ class SalaryDetailScreen extends StatelessWidget {
     final normalPay = record.normalHours * settings.hourlyGrossRate;
     final overtimePay = record.overtimeHours * settings.hourlyGrossRate * 2;
     final nightDiffPay = record.nightShiftHours * settings.hourlyGrossRate * 0.20;
-    final weekendPay = record.weekendHours * settings.hourlyGrossRate * 1.5;
+    final weekendPay = record.weekendHours * settings.hourlyGrossRate * 1.0;
+    final publicHolidayPay = record.publicHolidayHours * settings.hourlyGrossRate * 1.0;
+    final annualLeavePay = record.annualLeaveDays * 7.5 * settings.hourlyGrossRate;
+    
+    double shiftAllowance = record.normalHours * settings.hourlyGrossRate * 0.10;
     
     final familyAllowance = (settings.childCount * settings.childAllowancePerChild) + settings.fuelAllowance;
     
@@ -54,6 +59,16 @@ class SalaryDetailScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('${DateFormat('MMMM yyyy', 'tr_TR').format(DateTime(record.year, record.month))} Bordro'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            onPressed: () => _editRecord(context),
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete),
+            onPressed: () => _deleteRecord(context),
+          ),
+        ],
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
@@ -65,6 +80,16 @@ class SalaryDetailScreen extends StatelessWidget {
                 if (overtimePay > 0) _buildRow('Fazla Mesai', overtimePay),
                 if (nightDiffPay > 0) _buildRow('Gece Farkı', nightDiffPay),
                 if (weekendPay > 0) _buildRow('Hafta Tatili', weekendPay),
+                if (publicHolidayPay > 0) _buildRow('Genel Tatil', publicHolidayPay),
+                if (annualLeavePay > 0) _buildRow('Yıllık İzin', annualLeavePay),
+                if (record.otosanAllowance > 0) _buildRow('Otosan Katkısı', record.otosanAllowance),
+                if (record.holidayAllowance > 0) _buildRow('Bayram Harçlığı', record.holidayAllowance),
+                if (record.jobIndemnity > 0) _buildRow('Görev Tazminatı', record.jobIndemnity),
+                if (record.tisAdvance > 0) _buildRow('TİS Ön Ödeme', record.tisAdvance),
+                if (record.leaveAllowance > 0) _buildRow('İzin Harçlığı', record.leaveAllowance),
+                if (record.tahsilAllowance > 0) _buildRow('Tahsil Yardımı', record.tahsilAllowance),
+                if (record.shoeAllowance > 0) _buildRow('Ayakkabı Çeki', record.shoeAllowance),
+                if (shiftAllowance > 0) _buildRow('Vardiya', shiftAllowance),
                 if (record.bonusAmount > 0) _buildRow('İkramiye', record.bonusAmount),
                 if (familyAllowance > 0) _buildRow('Sosyal Yardımlar', familyAllowance),
                 const Divider(),
@@ -163,5 +188,46 @@ class SalaryDetailScreen extends StatelessWidget {
               ],
           ),
       );
+  }
+
+  Future<void> _editRecord(BuildContext context) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddSalaryRecordScreen(record: record),
+      ),
+    );
+
+    if (result == true && context.mounted) {
+      Navigator.pop(context, true); // Return true to trigger refresh in parent
+    }
+  }
+
+  Future<void> _deleteRecord(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Kaydı Sil'),
+        content: const Text('Bu maaş kaydını silmek istediğinize emin misiniz?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('İPTAL'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('SİL'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      await DatabaseService.deleteSalaryRecord(record.id);
+      if (context.mounted) {
+         Navigator.pop(context, true); // Return true to trigger refresh in parent
+      }
+    }
   }
 }

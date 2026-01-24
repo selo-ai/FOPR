@@ -56,6 +56,38 @@ class ShiftCalendarService {
     return count;
   }
 
+  /// Belirli ay için Pazar günü sayısını hesaplar
+  static int countSundaysInMonth(int year, int month) {
+     int count = 0;
+    final firstDay = DateTime(year, month, 1);
+    final lastDay = DateTime(year, month + 1, 0);
+    
+    for (var day = firstDay; day.isBefore(lastDay) || day.isAtSameMomentAs(lastDay); day = day.add(const Duration(days: 1))) {
+      if (day.weekday == DateTime.sunday) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  /// Belirli ay için Genel Tatil Saatlerini hesaplar (Pazar hariç)
+  static double getPublicHolidayHoursInMonth(int year, int month) {
+    double totalHours = 0;
+    final firstDay = DateTime(year, month, 1);
+    final lastDay = DateTime(year, month + 1, 0);
+    
+    for (var day = firstDay; day.isBefore(lastDay) || day.isAtSameMomentAs(lastDay); day = day.add(const Duration(days: 1))) {
+      // Pazar günü ise bu genel tatil değil, hafta tatilidir
+      if (day.weekday == DateTime.sunday) continue;
+      
+      double holidayAmount = HolidayUtils.getHolidayAmount(day);
+      if (holidayAmount > 0) {
+        totalHours += holidayAmount * 7.5;
+      }
+    }
+    return totalHours;
+  }
+
   /// Belirli ay için akşam vardiyası gün sayısını hesaplar
   static int countEveningShiftsInMonth(int year, int month) {
     int count = 0;

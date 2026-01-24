@@ -32,15 +32,19 @@ class SalarySettingsAdapter extends TypeAdapter<SalarySettings> {
       hasHealthInsurance: fields[12] == null ? false : fields[12] as bool,
       ossPersonCount: fields[13] == null ? 0 : fields[13] as int,
       ossCostPerPerson: fields[14] == null ? 0.0 : fields[14] as double,
-      hasExecution: fields[15] == null ? false : fields[15] as bool,
-      executionAmount: fields[16] == null ? 0.0 : fields[16] as double,
+      hasExecution: fields[18] == null ? false : fields[18] as bool,
+      executionAmount: fields[19] == null ? 0.0 : fields[19] as double,
+      healthInsuranceType: fields[15] == null ? 'tss' : fields[15] as String,
+      healthInsuranceHasSpouse: fields[16] == null ? false : fields[16] as bool,
+      healthInsuranceChildCount: fields[17] == null ? 0 : fields[17] as int,
+      hasShiftAllowance: fields[20] == null ? true : fields[20] as bool,
     );
   }
 
   @override
   void write(BinaryWriter writer, SalarySettings obj) {
     writer
-      ..writeByte(17)
+      ..writeByte(21)
       ..writeByte(0)
       ..write(obj.hourlyGrossRate)
       ..writeByte(1)
@@ -72,9 +76,17 @@ class SalarySettingsAdapter extends TypeAdapter<SalarySettings> {
       ..writeByte(14)
       ..write(obj.ossCostPerPerson)
       ..writeByte(15)
-      ..write(obj.hasExecution)
+      ..write(obj.healthInsuranceType)
       ..writeByte(16)
-      ..write(obj.executionAmount);
+      ..write(obj.healthInsuranceHasSpouse)
+      ..writeByte(17)
+      ..write(obj.healthInsuranceChildCount)
+      ..writeByte(18)
+      ..write(obj.hasExecution)
+      ..writeByte(19)
+      ..write(obj.executionAmount)
+      ..writeByte(20)
+      ..write(obj.hasShiftAllowance);
   }
 
   @override

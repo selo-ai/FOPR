@@ -44,10 +44,14 @@ class _SalaryScreenState extends State<SalaryScreen> {
     final settings = await DatabaseService.getSalarySettings();
     if (!mounted) return;
 
-    Navigator.push(
+    final result = await Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => SalaryDetailScreen(record: record, settings: settings)),
     );
+
+    if (result == true) {
+      _loadRecords();
+    }
   }
 
 

@@ -97,4 +97,19 @@ class HolidayUtils {
 
     return 0.0;
   }
+  static bool isRamazanMonth(int year, int month) {
+    if (year == 2024) return month == 4;
+    if (year == 2025) return month == 3 || month == 4; // March 30
+    if (year == 2026) return month == 3;
+    if (year == 2027) return month == 3;
+    return false;
+  }
+
+  static bool isKurbanMonth(int year, int month) {
+    if (year == 2024) return month == 6;
+    if (year == 2025) return month == 6;
+    if (year == 2026) return month == 5;
+    if (year == 2027) return month == 5;
+    return false;
+  }
 }

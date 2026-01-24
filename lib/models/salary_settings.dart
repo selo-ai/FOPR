@@ -53,11 +53,23 @@ class SalarySettings extends HiveObject {
   @HiveField(14, defaultValue: 0.0)
   double ossCostPerPerson;
 
-  @HiveField(15, defaultValue: false)
+  @HiveField(15, defaultValue: 'tss')
+  String healthInsuranceType; // 'tss' or 'oss'
+
+  @HiveField(16, defaultValue: false)
+  bool healthInsuranceHasSpouse;
+
+  @HiveField(17, defaultValue: 0)
+  int healthInsuranceChildCount;
+
+  @HiveField(18, defaultValue: false)
   bool hasExecution;
 
-  @HiveField(16, defaultValue: 0.0)
+  @HiveField(19, defaultValue: 0.0)
   double executionAmount;
+
+  @HiveField(20, defaultValue: true)
+  bool hasShiftAllowance;
 
   SalarySettings({
     this.hourlyGrossRate = 0.0,
@@ -77,5 +89,9 @@ class SalarySettings extends HiveObject {
     this.ossCostPerPerson = 0.0,
     this.hasExecution = false,
     this.executionAmount = 0.0,
+    this.healthInsuranceType = 'tss',
+    this.healthInsuranceHasSpouse = false,
+    this.healthInsuranceChildCount = 0,
+    this.hasShiftAllowance = true,
   });
 }

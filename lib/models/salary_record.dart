@@ -44,6 +44,36 @@ class SalaryRecord extends HiveObject {
   @HiveField(12)
   double totalNetPay;
 
+  @HiveField(13, defaultValue: 0.0)
+  double totalSundayHours;
+
+  @HiveField(14, defaultValue: 0.0)
+  double publicHolidayHours;
+
+  @HiveField(15, defaultValue: 0.0)
+  double annualLeaveDays;
+
+  @HiveField(16, defaultValue: 0.0)
+  double otosanAllowance;
+
+  @HiveField(17, defaultValue: 0.0)
+  double holidayAllowance; // Hive v17 (Bayram Harçlığı)
+
+  @HiveField(18, defaultValue: 0.0)
+  double leaveAllowance; // Hive v18 (İzin Harçlığı)
+
+  @HiveField(19, defaultValue: 0.0)
+  double tahsilAllowance; // Hive v19 (Tahsil Yardımı)
+
+  @HiveField(20, defaultValue: 0.0)
+  double shoeAllowance;
+
+  @HiveField(21, defaultValue: 0.0)
+  double jobIndemnity; // Hive v21 (Görev Tazminatı)
+
+  @HiveField(22, defaultValue: 0.0)
+  double tisAdvance; // Hive v22 (TİS Ön Ödeme)
+
   SalaryRecord({
     required this.id,
     required this.year,
@@ -58,6 +88,16 @@ class SalaryRecord extends HiveObject {
     this.cachedHourlyRate = 0.0,
     this.totalGrossPay = 0.0,
     this.totalNetPay = 0.0,
+    this.totalSundayHours = 0.0,
+    this.publicHolidayHours = 0.0,
+    this.annualLeaveDays = 0.0,
+    this.otosanAllowance = 0.0,
+    this.holidayAllowance = 0.0,
+    this.leaveAllowance = 0.0,
+    this.tahsilAllowance = 0.0,
+    this.shoeAllowance = 0.0,
+    this.jobIndemnity = 0.0,
+    this.tisAdvance = 0.0,
   });
 
   factory SalaryRecord.create({
@@ -69,6 +109,15 @@ class SalaryRecord extends HiveObject {
     double weekendHours = 0,
     double bonusAmount = 0,
     double advanceAmount = 0,
+    double publicHolidayHours = 0,
+    double annualLeaveDays = 0,
+    double otosanAllowance = 0,
+    double holidayAllowance = 0,
+    double leaveAllowance = 0,
+    double tahsilAllowance = 0,
+    double shoeAllowance = 0,
+    double jobIndemnity = 0,
+    double tisAdvance = 0,
   }) {
     return SalaryRecord(
       id: const Uuid().v4(),
@@ -80,6 +129,15 @@ class SalaryRecord extends HiveObject {
       weekendHours: weekendHours,
       bonusAmount: bonusAmount,
       advanceAmount: advanceAmount,
+      publicHolidayHours: publicHolidayHours,
+      annualLeaveDays: annualLeaveDays,
+      otosanAllowance: otosanAllowance,
+      holidayAllowance: holidayAllowance,
+      leaveAllowance: leaveAllowance,
+      tahsilAllowance: tahsilAllowance,
+      shoeAllowance: shoeAllowance,
+      jobIndemnity: jobIndemnity,
+      tisAdvance: tisAdvance,
       createdAt: DateTime.now(),
     );
   }

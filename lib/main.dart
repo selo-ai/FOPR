@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'services/database_service.dart';
+import 'services/social_service.dart';
 import 'app.dart';
 
 void main() async {
@@ -22,6 +23,9 @@ void main() async {
     debugPrint('Database init error: $e');
     // Continue running app even if DB fails, or show error screen
   }
+
+  // Initialize social standards service
+  await SocialService.init();
   
   runApp(const FOPRApp());
 }
