@@ -39,7 +39,7 @@ FOPR, vardiyalı çalışanlar için özel olarak tasarlanmış, kişisel bir i�
     - Bu ay kullanılan ve toplam kalan yıllık izin günü.
 
 ### 8. 👤 Profil ve Onboarding
-- İlk açılışta kişisel bilgileri (Ad Soyad, Sicil No, Başlangıç Tarihi) alarak sistemi kişiselleştirir.
+- İlk açılışta kişisel bilgileri (Ad Soyad, Başlangıç Tarihi) alarak sistemi kişiselleştirir.
 
 ## 🛠️ Teknik Detaylar
 - **Framework:** Flutter
