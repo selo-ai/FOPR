@@ -15,7 +15,6 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   late Settings _settings;
   final _nameController = TextEditingController();
-  final _employeeIdController = TextEditingController();
   final _hourlyRateController = TextEditingController();
   final _monthlyQuotaController = TextEditingController();
   final _yearlyQuotaController = TextEditingController();
@@ -31,7 +30,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void _loadSettings() {
     _settings = DatabaseService.getSettings();
     _nameController.text = _settings.fullName ?? '';
-    _employeeIdController.text = _settings.employeeId ?? '';
     _hourlyRateController.text =
         _settings.hourlyRate > 0 ? _settings.hourlyRate.toString() : '';
     _monthlyQuotaController.text =
@@ -45,7 +43,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void dispose() {
     _nameController.dispose();
-    _employeeIdController.dispose();
     _hourlyRateController.dispose();
     _monthlyQuotaController.dispose();
     _yearlyQuotaController.dispose();
@@ -74,12 +71,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             label: 'Adı Soyadı',
             icon: Icons.person_outline,
           ),
-          const SizedBox(height: 12),
-          _buildTextField(
-            controller: _employeeIdController,
-            label: 'Sicil No',
-            icon: Icons.badge_outlined,
-          ),
+
           const SizedBox(height: 12),
           _buildDateField(),
           const SizedBox(height: 32),
@@ -132,7 +124,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Column(
               children: [
                 Text(
-                  'v1.0.1',
+                  'v1.0.2',
                   style: TextStyle(color: Colors.grey.shade500, fontSize: 12),
                 ),
                 const SizedBox(height: 4),
@@ -314,8 +306,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _save() async {
     _settings.fullName =
         _nameController.text.isNotEmpty ? _nameController.text : null;
-    _settings.employeeId =
-        _employeeIdController.text.isNotEmpty ? _employeeIdController.text : null;
     _settings.startDate = _startDate;
     _settings.hourlyRate =
         double.tryParse(_hourlyRateController.text.replaceAll(',', '.')) ?? 0;

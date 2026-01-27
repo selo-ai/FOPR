@@ -1,12 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:quick_actions/quick_actions.dart';
 import '../services/database_service.dart';
+import '../services/widget_service.dart';
 import 'overtime/overtime_screen.dart';
+import 'overtime/add_overtime_screen.dart';
 import 'leave/leave_screen.dart';
+import 'leave/add_leave_screen.dart';
 import 'shift/shift_screen.dart';
 import 'settings/settings_screen.dart';
 import 'notes/notes_screen.dart';
 import 'salary/salary_screen.dart';
+import 'salary/add_salary_record_screen.dart';
 import '../models/salary_record.dart';
 import '../widgets/shift_calendar_widget.dart';
 
@@ -28,10 +33,55 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadData();
+    _initQuickActions();
+    
     // WidgetsBinding is used to show dialog after first frame
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkOnboarding();
     });
+  }
+
+  void _initQuickActions() {
+    const QuickActions quickActions = QuickActions();
+    
+    quickActions.initialize((shortcutType) {
+      if (shortcutType == 'add_overtime') { // Updated type
+        _navigateToAddOvertime();
+      } else if (shortcutType == 'add_leave') {
+        _navigateToAddLeave();
+      }
+    });
+
+    quickActions.setShortcutItems(<ShortcutItem>[
+      const ShortcutItem(
+        type: 'add_overtime', // Updated type
+        localizedTitle: 'Mesai Ekle',
+        icon: 'launcher_icon',
+      ),
+      const ShortcutItem(
+        type: 'add_leave',
+        localizedTitle: 'İzin Ekle',
+        icon: 'launcher_icon',
+      ),
+    ]);
+  }
+
+  void _navigateToAddOvertime() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AddOvertimeScreen(),
+      ),
+    ).then((_) => _loadData());
+  }
+
+  void _navigateToAddLeave() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AddLeaveScreen(),
+      ),
+    ).then((_) => _loadData());
   }
 
   void _checkOnboarding() {
@@ -79,6 +129,13 @@ class _HomeScreenState extends State<HomeScreen> {
       _monthlyLeave = DatabaseService.getUsedLeaveDaysByMonth(now.year, now.month);
       _yearlyLeaveRemaining = DatabaseService.getRemainingAnnualLeaveDays(now.year);
     });
+
+    WidgetService.updateWidget(
+      monthlyOvertime: _monthlyTotal,
+      yearlyOvertime: _yearlyTotal,
+      monthlyLeave: _monthlyLeave,
+      yearlyLeave: _yearlyLeaveRemaining,
+    );
   }
 
   @override

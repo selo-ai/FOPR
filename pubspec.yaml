@@ -2,7 +2,7 @@ name: fopr
 description: "FOPR - İş Takip Uygulaması"
 publish_to: 'none'
 
-version: 1.0.1+2
+version: 1.0.2+3
 
 environment:
   sdk: ^3.10.4
@@ -34,6 +34,9 @@ dependencies:
   share_plus: any
   printing: any
   open_filex: any
+  package_info_plus: ^9.0.0
+  quick_actions: ^1.1.0
+  home_widget: ^0.9.0
 
 dev_dependencies:
   flutter_test:
@@ -48,15 +51,15 @@ dev_dependencies:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/icon/app_icon.png"
+  image_path: "assets/icon/icon_2.png"
   min_sdk_android: 21
 
 flutter_native_splash:
   color: "#FAFAFA"
-  image: "assets/icon/app_icon.png"
+  image: "assets/icon/icon_2.png"
   android_12:
     color: "#FAFAFA"
-    image: "assets/icon/app_icon.png"
+    image: "assets/icon/icon_2.png"
 
 
 
@@ -76,6 +79,7 @@ flutter:
     - assets/fonts/
     - assets/images/
     - assets/data/
+    - assets/icon/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

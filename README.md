@@ -28,7 +28,17 @@ FOPR, vardiyalı çalışanlar için özel olarak tasarlanmış, kişisel bir i�
 ### 5. 📝 Kişisel Notlar
 - İşle ilgili notlar alma, tarihe göre kaydetme ve yıldızlayarak önemlileri ayırma.
 
-### 6. 👤 Profil ve Onboarding
+### 6. ⚡ Hızlı Erişim (Quick Actions)
+- Uygulama ikonuna basılı tutarak "Mesai Ekle" ve "İzin Ekle" kısayol menülerine erişilebilir.
+- Tek dokunuşla ilgili veri giriş ekranını açma özelliği.
+
+### 7. 📱 Ana Ekran Widget'ı
+- Uygulamayı açmadan ana ekranda (2x2 boyutunda widget) önemli bilgileri görüntüleme.
+- **Takip Edilen Veriler:**
+    - Bu ayki ve yıllık toplam fazla mesai saati.
+    - Bu ay kullanılan ve toplam kalan yıllık izin günü.
+
+### 8. 👤 Profil ve Onboarding
 - İlk açılışta kişisel bilgileri (Ad Soyad, Sicil No, Başlangıç Tarihi) alarak sistemi kişiselleştirir.
 
 ## 🛠️ Teknik Detaylar
