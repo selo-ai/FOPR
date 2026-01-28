@@ -351,7 +351,7 @@ class _AddSalaryRecordScreenState extends State<AddSalaryRecordScreen> {
               const SizedBox(height: 16),
               
               _buildSwitchField(
-                title: 'Otosan Katkısı',
+                title: 'İşveren Katkısı',
                 value: _hasOtosan,
                 onChanged: (val) => setState(() {
                     _hasOtosan = val;

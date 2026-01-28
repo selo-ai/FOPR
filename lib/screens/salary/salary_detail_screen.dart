@@ -82,7 +82,7 @@ class SalaryDetailScreen extends StatelessWidget {
                 if (weekendPay > 0) _buildRow('Hafta Tatili', weekendPay),
                 if (publicHolidayPay > 0) _buildRow('Genel Tatil', publicHolidayPay),
                 if (annualLeavePay > 0) _buildRow('Yıllık İzin', annualLeavePay),
-                if (record.otosanAllowance > 0) _buildRow('Otosan Katkısı', record.otosanAllowance),
+                if (record.otosanAllowance > 0) _buildRow('İşveren Katkısı', record.otosanAllowance),
                 if (record.holidayAllowance > 0) _buildRow('Bayram Harçlığı', record.holidayAllowance),
                 if (record.jobIndemnity > 0) _buildRow('Görev Tazminatı', record.jobIndemnity),
                 if (record.tisAdvance > 0) _buildRow('TİS Ön Ödeme', record.tisAdvance),
