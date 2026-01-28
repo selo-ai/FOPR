@@ -4,6 +4,8 @@ import 'package:quick_actions/quick_actions.dart';
 import '../services/database_service.dart';
 import '../services/widget_service.dart';
 import 'overtime/overtime_screen.dart';
+
+import '../services/salary_service.dart'; // Added import
 import 'overtime/add_overtime_screen.dart';
 import 'leave/leave_screen.dart';
 import 'leave/add_leave_screen.dart';
@@ -27,6 +29,8 @@ class _HomeScreenState extends State<HomeScreen> {
   double _yearlyTotal = 0;
   double _monthlyLeave = 0;
   double _yearlyLeaveRemaining = 0;
+
+  double _currentEarnings = 0; // New State
   bool _isCalendarVisible = false;
 
   @override
@@ -129,6 +133,13 @@ class _HomeScreenState extends State<HomeScreen> {
       _monthlyLeave = DatabaseService.getUsedLeaveDaysByMonth(now.year, now.month);
       _yearlyLeaveRemaining = DatabaseService.getRemainingAnnualLeaveDays(now.year);
     });
+    
+    // Async avg calculation
+    SalaryService.calculateMonthToDateEarnings(now.year, now.month, now.day).then((val) {
+        setState(() {
+            _currentEarnings = val;
+        });
+    });
 
     WidgetService.updateWidget(
       monthlyOvertime: _monthlyTotal,
@@ -177,6 +188,8 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 16),
 
             // Header Stats
+            _buildEarningsCard(), // New Card
+            const SizedBox(height: 16),
             _buildStatsHeader(),
             const SizedBox(height: 32),
 
@@ -224,6 +237,54 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildEarningsCard() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+            colors: [Colors.blue.shade800, Colors.blue.shade600],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+            BoxShadow(
+                color: Colors.blue.withOpacity(0.3),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+            ),
+        ],
+      ),
+      child: Column(
+        children: [
+            const Text(
+                'GÜNCEL HAKEDİŞ (TAHMİNİ)',
+                style: TextStyle(
+                    color: Colors.white70, 
+                    fontSize: 12, 
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 1.0,
+                ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+                NumberFormat.currency(symbol: '₺', decimalDigits: 2, locale: 'tr_TR').format(_currentEarnings),
+                style: const TextStyle(
+                    color: Colors.white, 
+                    fontSize: 32, 
+                    fontWeight: FontWeight.bold,
+                ),
+            ),
+             const SizedBox(height: 4),
+             Text(
+                '${DateFormat('d MMMM yyyy', 'tr_TR').format(DateTime.now())} itibariyle',
+                style: const TextStyle(color: Colors.white54, fontSize: 11),
+            ),
+        ],
       ),
     );
   }
@@ -399,7 +460,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _navigateToOvertime(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(builder: (context) => const OvertimeScreen()),
+      MaterialPageRoute(builder: (context) => OvertimeScreen()),
     ).then((_) => _loadData());
   }
 

@@ -1,6 +1,9 @@
 import '../models/salary_record.dart';
 import '../models/salary_settings.dart';
 import 'database_service.dart';
+import '../services/shift_calendar_service.dart';
+import '../models/shift_type.dart';
+import '../utils/holiday_utils.dart';
 
 class SalaryService {
   // 2026 Gelir Vergisi Dilimleri (Kümülatif)
@@ -206,5 +209,59 @@ class SalaryService {
     
     await record.save();
     return record;
+  }
+
+  /// Ayın belli bir gününe kadar olan tahmini hakedişi hesaplar
+  static Future<double> calculateMonthToDateEarnings(int year, int month, int currentDay) async {
+    final settings = await DatabaseService.getSalarySettings();
+    if (settings.hourlyGrossRate <= 0) return 0.0;
+
+    double accumulatedGross = 0;
+
+    // 1. Temel Hakediş (Bugüne kadar geçen gün sayısı * 7.5 * Saatlik Ücret)
+    // Pazar günleri ve tatiller dahil her gün ücretlidir (Aylık maktu maaş mantığı)
+    accumulatedGross += currentDay * 7.5 * settings.hourlyGrossRate;
+
+    // 2. Fazla Mesai (Bugüne kadar girilmiş mesailer)
+    // Tüm mesaileri çek ve tarihi bugünden küçük eşit olanları topla
+    final allOvertimes = DatabaseService.getOvertimesByMonth(year, month);
+    double totalOvertimeHours = 0;
+    
+    for (var o in allOvertimes) {
+      if (o.date.day <= currentDay) {
+        totalOvertimeHours += o.hours;
+      }
+    }
+    accumulatedGross += totalOvertimeHours * settings.hourlyGrossRate * 2; // %100 zamlı
+
+    // 3. Gece Farkı (Bugüne kadar tutulan gece vardiyaları)
+    int nightShiftCount = 0;
+    for (int d = 1; d <= currentDay; d++) {
+        final date = DateTime(year, month, d);
+        if (date.weekday == DateTime.sunday) continue; // Pazar hariç
+        if (ShiftCalendarService.getShiftForDate(date) == ShiftType.night) {
+            nightShiftCount++;
+        }
+    }
+    accumulatedGross += nightShiftCount * 7.5 * settings.hourlyGrossRate * 0.20; // %20 fark
+
+    // 4. Kesintiler ve Net Hesaplama
+    double sgk = calculateSGK(accumulatedGross);
+    double unemployment = calculateUnemployment(accumulatedGross);
+    double stampDuty = calculateStampDuty(accumulatedGross);
+    
+    // Vergi matrahı
+    double taxBase = accumulatedGross - sgk - unemployment;
+    
+    // Kümülatif matrah (Geçmiş aylardan gelen)
+    double cumulativeBaseBefore = getCumulativeTaxBase(year, month);
+    
+    double incomeTax = calculateIncomeTax(taxBase, cumulativeBaseBefore);
+
+    double totalLegalDeductions = sgk + unemployment + stampDuty + incomeTax;
+    
+    double netEarnings = accumulatedGross - totalLegalDeductions;
+    
+    return netEarnings;
   }
 }

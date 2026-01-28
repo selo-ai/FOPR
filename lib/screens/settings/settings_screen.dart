@@ -3,7 +3,9 @@ import 'package:intl/intl.dart';
 import '../../app.dart';
 import '../../models/settings.dart';
 import '../../models/shift_type.dart';
+
 import '../../services/database_service.dart';
+import '../salary/salary_settings_screen.dart'; // Added import
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -15,7 +17,7 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   late Settings _settings;
   final _nameController = TextEditingController();
-  final _hourlyRateController = TextEditingController();
+  // removed _hourlyRateController
   final _monthlyQuotaController = TextEditingController();
   final _yearlyQuotaController = TextEditingController();
   DateTime? _startDate;
@@ -27,23 +29,34 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _loadSettings();
   }
 
-  void _loadSettings() {
+  Future<void> _loadSettings() async {
     _settings = DatabaseService.getSettings();
+    
+    // Migration Logic: Check if hourlyRate exists in Settings but not in SalarySettings
+    if (_settings.hourlyRate > 0) {
+        final salarySettings = await DatabaseService.getSalarySettings();
+        if (salarySettings.hourlyGrossRate == 0) {
+            salarySettings.hourlyGrossRate = _settings.hourlyRate;
+            await salarySettings.save();
+            // Optional: reset _settings.hourlyRate or keep as backup
+        }
+    }
+
     _nameController.text = _settings.fullName ?? '';
-    _hourlyRateController.text =
-        _settings.hourlyRate > 0 ? _settings.hourlyRate.toString() : '';
+    // _hourlyRateController removed
     _monthlyQuotaController.text =
         _settings.monthlyQuota > 0 ? _settings.monthlyQuota.toString() : '';
     _yearlyQuotaController.text =
         _settings.yearlyQuota > 0 ? _settings.yearlyQuota.toString() : '';
     _startDate = _settings.startDate;
     _shiftStartDate = _settings.shiftStartDate;
+    setState(() {}); // Refresh UI after async
   }
 
   @override
   void dispose() {
     _nameController.dispose();
-    _hourlyRateController.dispose();
+    // _hourlyRateController removed
     _monthlyQuotaController.dispose();
     _yearlyQuotaController.dispose();
     super.dispose();
@@ -77,14 +90,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
           const SizedBox(height: 32),
 
           // Overtime settings section
-          _buildSectionHeader('Mesai Ayarları'),
+          _buildSectionHeader('Mesai & Maaş Ayarları'),
           const SizedBox(height: 12),
-          _buildTextField(
+          
+          // Navigation to Salary Settings
+          Card(
+            child: ListTile(
+                leading: const Icon(Icons.calculate_outlined, color: Colors.blue),
+                title: const Text('Maaş Parametreleri'),
+                subtitle: const Text('Saatlik ücret, kesintiler ve aile yardımı'),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                    Navigator.push(
+                        context, 
+                        MaterialPageRoute(builder: (context) => const SalarySettingsScreen())
+                    ).then((_) => _loadSettings());
+                },
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          /* _buildTextField(
             controller: _hourlyRateController,
             label: 'Saat Ücreti (₺)',
             icon: Icons.payments_outlined,
             keyboardType: TextInputType.number,
-          ),
+          ), 
+          removed */
+
+
           const SizedBox(height: 12),
           _buildTextField(
             controller: _monthlyQuotaController,
@@ -307,8 +341,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _settings.fullName =
         _nameController.text.isNotEmpty ? _nameController.text : null;
     _settings.startDate = _startDate;
-    _settings.hourlyRate =
-        double.tryParse(_hourlyRateController.text.replaceAll(',', '.')) ?? 0;
+    // _hourlyRate is not updated here anymore
     _settings.monthlyQuota =
         double.tryParse(_monthlyQuotaController.text.replaceAll(',', '.')) ?? 0;
     _settings.yearlyQuota =
